@@ -10,28 +10,19 @@ def lds(arr):
             if i == j:
                 DP[j][i] = arr[i], arr[i]
             else:
-                par_max = 0
-                ind_max = i
+                col_max = 0, math.inf
                 for k in range(i, j):
                     if DP[k][i][1] >= arr[j]:
-                        cur = DP[k][i][0] + arr[j]
+                        cur = DP[k][i][0] + arr[j], arr[j]
                     else:
-                        cur = DP[k][i][0]
-                    if cur > par_max:
-                        par_max = cur
-                        ind_max = k
+                        cur = DP[k][i]
+                    if cur[0] > col_max[0]:
+                        col_max = cur
 
-                if DP[j][i+1][0] > par_max:
+                if DP[j][i+1][0] > col_max[0]:
                     DP[j][i] = DP[j][i+1]
                 else:
-                    par_sum, last = DP[ind_max][i]
-                    if last >= arr[j]:
-                        DP[j][i] = par_sum + arr[j], arr[j]
-                    else:
-                        DP[j][i] = DP[j-1][i]
-
-    for r in DP:
-        print(r)
+                    DP[j][i] = col_max
 
     return solution(DP, arr)
 
@@ -42,21 +33,14 @@ def solution(DP, arr):
     sol = [DP[j][i][1]]
 
     while i < j and j >= 0:
-        if DP[j][i][0] == DP[j][i+1][0]:
+        if DP[j][i] == DP[j][i+1]:
             i += 1
         else:
             target = DP[j][i][0] - DP[j][i][1]
             while i < j:
-                if DP[j][i][0] != target:
-                    j-=1
-                else:
+                j -= 1
+                if DP[j][i][0] == target:
                     sol.append(DP[j][i][1])
                     break
-        
-    sol.append(DP[j][i][1])
+
     return list(reversed(sol))
-
-
-res = lds([4, 4, 3, 7, 5])
-
-print(res)
