@@ -1,6 +1,8 @@
 def lds(arr):
     if len(arr) < 1:
         return []
+    if all(el < 0 for el in arr):
+        return []
     DP = [i for i in arr]
     for i in range(1, len(arr)):
 

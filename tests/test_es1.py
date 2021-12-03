@@ -1,6 +1,6 @@
 import pytest
 import random
-from .. import es1
+from ..src import es1
 
 
 def bruteforce(arr):
@@ -31,10 +31,17 @@ def tests_multiple_random(execution_number):
     assert sum(result) == sum(expected), f"{result} {expected}"
 
 
-@pytest.mark.parametrize("test_input,expected", [
-    ([1, 7, 2, 8, 4, 6, 9, 4], [8, 6, 4]),
-    ([4, 4, 3, 7, 5], [7, 5]),
-    ([1, 7, 2, 8, 4, 6, 9, 4, 9], [9, 9]),
+# autopep8: off
+@pytest.mark.parametrize("test_input,expected", [ 
+    ([1, 7, 2, 8, 4, 6, 9, 4            ], [8, 6, 4]), 
+    ([4, 4, 3, 7, 5                     ], [7, 5   ]),
+    ([1, 7, 2, 8, 4, 6, 9, 4, 9         ], [9, 9   ]),
+    ([-1, -7, -2, -8, -4, -6, -9, -4, -9], [       ]),
+    ([-1, -7, -2, 8, 4, -6, -9, -4, 9   ], [8, 4   ]),
+    ([1, 7, 2, -8, 4, 6, 9, 4, 9        ], [9, 9   ]),
+    ([                                  ], [       ]),
+    ([0, 0, 0, 0, 0, 0, 0, 0            ], [       ]),
+    ([-1                                ], [       ]),
 ])
 def test_success(test_input, expected):
     result = es1.lds(test_input)
