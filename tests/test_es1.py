@@ -20,14 +20,16 @@ def bruteforce(arr):
     return best
 
 
-def tests_multiple_random():
-    for _ in range(20):
-        r = [0] * 20
-        for i in range(len(r)):
-            r[i] = random.randint(0, 50)
+@pytest.mark.parametrize('execution_number', range(50))
+def tests_multiple_random(execution_number):
+    r = [0] * 12
+    for i in range(len(r)):
+        r[i] = random.randint(-50, 50)
+    print(r)
 
-        expected = bruteforce(r)
-        assert expected == es1.lds(r)
+    expected = bruteforce(r)
+    result = es1.lds(r)
+    assert sum(result) == sum(expected), f"{result} {expected}"
 
 
 @pytest.mark.parametrize("test_input,expected", [
