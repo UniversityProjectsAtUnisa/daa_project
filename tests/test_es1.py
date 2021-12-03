@@ -25,7 +25,6 @@ def tests_multiple_random(execution_number):
     r = [0] * 12
     for i in range(len(r)):
         r[i] = random.randint(-50, 50)
-    print(r)
 
     expected = bruteforce(r)
     result = es1.lds(r)

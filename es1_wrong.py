@@ -1,7 +1,7 @@
 import math
 
 
-def lds(arr): # TODO: Fixa con un solo elemento negativo; Fixa con molti negativi
+def lds(arr):
     if len(arr) < 1:
         return []
     DP = [[(0, math.inf) for i in range(j+1)] for j in range(len(arr))]
