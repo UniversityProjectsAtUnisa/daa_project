@@ -1,6 +1,7 @@
 import random
-from daa_collections.graphs.graph import Graph
+from .daa_collections.graphs.graph import Graph
 import math
+from itertools import combinations
 
 
 def is_valid(g: Graph, vertices):
@@ -18,16 +19,12 @@ def groups(l: list, k):
 
 
 def bruteforce_independent_set(g: Graph, l=None):
-    best = []
     vertices = list(g.vertices()) if l == None else l
-    for i in range(2**len(vertices)):
-        cur = []
-        for j, taken in enumerate(f"{i:>0{len(vertices)+2}b}"[2:]): # TODO: Ottimizza l'iterazione
-            if taken == '1':
-                cur.append(vertices[j])
-        if is_valid(g, cur) and len(cur) > len(best):
-            best = cur
-    return best
+    for i in range(len(vertices), 0, -1):
+        for comb in combinations(vertices, i):
+            if is_valid(g, comb):
+                return comb
+    return tuple()
 
 
 def independent_set(g: Graph):
@@ -45,22 +42,23 @@ def independent_set(g: Graph):
 
 
 ############################################################################
-random.seed(1)
+# random.seed(1)
 
 
-def create_graph(n_vertices):
-    g = Graph()
-    for _ in range(n_vertices):
-        g.insert_vertex()
+# def create_graph(n_vertices):
+#     g = Graph()
+#     for _ in range(n_vertices):
+#         g.insert_vertex()
 
-    vertices = list(g.vertices())
-    for i, v in enumerate(vertices[:-1]):
-        for o in vertices[i+1:]:
-            if random.choice([0, 1]):
-                g.insert_edge(v, o)
-    return g
+#     vertices = list(g.vertices())
+#     for i, v in enumerate(vertices[:-1]):
+#         for o in vertices[i+1:]:
+#             if random.choice([0, 1]):
+#                 g.insert_edge(v, o)
+#     return g
 
 
-g = create_graph(5)
-s = bruteforce_independent_set(g)
-s = independent_set(g)
+# g = create_graph(5)
+# s = bruteforce_independent_set(g)
+# s = independent_set(g)
+# print(s)
