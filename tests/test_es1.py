@@ -1,9 +1,9 @@
 import pytest
-import random
-from ..src import es1
+from .. import es1
 
 
-def bruteforce(arr):
+def oracle(arr):
+    """Bruteforce oracle"""
     best = []
     best_value = 0
     for i in range(2**len(arr)):
@@ -21,14 +21,12 @@ def bruteforce(arr):
 
 
 @pytest.mark.parametrize('execution_number', range(50))
-def tests_multiple_random(execution_number):
-    r = [0] * 12
-    for i in range(len(r)):
-        r[i] = random.randint(-50, 50)
-
-    expected = bruteforce(r)
-    result = es1.lds(r)
-    assert sum(result) == sum(expected), f"{result} {expected}"
+def tests_multiple_random(execution_number, random_list):
+    expected = oracle(random_list)
+    result = es1.lds(random_list)
+    with open("logs/es1.log", "a") as f:
+        f.write(f"{execution_number=} {result=} {expected=}\n")
+    assert sum(result) == sum(expected), f"{result=} {expected=}"
 
 
 # autopep8: off
@@ -45,4 +43,4 @@ def tests_multiple_random(execution_number):
 ])
 def test_success(test_input, expected):
     result = es1.lds(test_input)
-    assert sum(result) == sum(expected), f"{result} {expected}"
+    assert sum(result) == sum(expected), f"{result=} {expected=}"

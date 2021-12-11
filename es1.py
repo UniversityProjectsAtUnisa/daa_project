@@ -1,7 +1,7 @@
 def lds(arr):
     if len(arr) < 1:
         return []
-    if all(el < 0 for el in arr):
+    if all(el < 0 for el in arr): # TODO: chiedere
         return []
     DP = [i for i in arr]
     for i in range(1, len(arr)):
