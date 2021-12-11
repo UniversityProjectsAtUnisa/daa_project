@@ -6,12 +6,15 @@ from pathlib import Path
 
 
 def generate_random_integer():
-    return random.randint(-50, 50)
+    MIN = -50
+    MAX = 50
+    return random.randint(MIN, MAX)
 
 
 @pytest.fixture
 def random_list():
-    l = [0] * 12
+    N_ELEMENTS = 12
+    l = [0] * N_ELEMENTS
     for i in range(len(l)):
         l[i] = generate_random_integer()
     return l
@@ -30,8 +33,8 @@ def get_list_of_files(dirname):
 
 
 def pytest_sessionstart(session):
-    directory = "logs"
-    Path(directory).mkdir(parents=True, exist_ok=True)
-    for path in get_list_of_files(directory):
+    DIRECTORY_RELATIVE_PATH = "logs"
+    Path(DIRECTORY_RELATIVE_PATH).mkdir(parents=True, exist_ok=True)
+    for path in get_list_of_files(DIRECTORY_RELATIVE_PATH):
         with open(path, "w") as f:  # Reset content
             f.write(f"{datetime.now()}\n")

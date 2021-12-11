@@ -1,17 +1,15 @@
+import random
 from daa_collections.graphs.graph import Graph
 import math
 
 
-def complementary_graph(g: Graph):
-    c = Graph()
-    vertices = g.vertices()
-    for v in vertices:
-        c.insert_vertex(v)
+def is_valid(g: Graph, vertices):
+    vertices = list(vertices)
     for i, v in enumerate(vertices[:-1]):
         for o in vertices[i+1:]:
-            if g.get_edge(v, o) is None:
-                c.insert_edge(v, o)
-    return c
+            if g.get_edge(v, o) is not None:
+                return False
+    return True
 
 
 def groups(l: list, k):
@@ -19,32 +17,50 @@ def groups(l: list, k):
         yield l[i:i+k]
 
 
-def bruteforce_clique(g: Graph, l: list):
+def bruteforce_independent_set(g: Graph, l=None):
     best = []
-    vertices = l
+    vertices = list(g.vertices()) if l == None else l
     for i in range(2**len(vertices)):
         cur = []
-        for j, taken in enumerate(f"{i:>0{len(vertices)+2}b}"[2:]):
-            if taken == 1:
+        for j, taken in enumerate(f"{i:>0{len(vertices)+2}b}"[2:]): # TODO: Ottimizza l'iterazione
+            if taken == '1':
                 cur.append(vertices[j])
-        if len(cur) > len(best):
+        if is_valid(g, cur) and len(cur) > len(best):
             best = cur
     return best
 
 
-def clique(g: Graph):
+def independent_set(g: Graph):
+    if len(g.vertices()) <= 1:
+        return g.vertices()
     vertices = list(g.vertices())
+    k = math.floor(math.log2(len(vertices)))
     best = []
-    k = max(math.floor(math.log2()), 1)
     for group in groups(vertices, k):
-        cur = bruteforce_clique(g, group)
+        cur = bruteforce_independent_set(g, group)
         if len(cur) > len(best):
             best = cur
 
     return set(best)
 
 
-def independent_set(g):
-    c = complementary_graph(g)
-    return clique(g)
+############################################################################
+random.seed(1)
 
+
+def create_graph(n_vertices):
+    g = Graph()
+    for _ in range(n_vertices):
+        g.insert_vertex()
+
+    vertices = list(g.vertices())
+    for i, v in enumerate(vertices[:-1]):
+        for o in vertices[i+1:]:
+            if random.choice([0, 1]):
+                g.insert_edge(v, o)
+    return g
+
+
+g = create_graph(5)
+s = bruteforce_independent_set(g)
+s = independent_set(g)
