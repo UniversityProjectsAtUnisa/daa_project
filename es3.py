@@ -5,7 +5,7 @@ from .daa_collections.map.map_base import MapBase
 
 class MedianTreeMap(LinkedBinaryTree, MapBase):
 
-    class _Node(LinkedBinaryTree._Node): # Aggiunto attributo _count al nodo
+    class _Node(LinkedBinaryTree._Node):  # Aggiunto attributo _count al nodo
         __slots__ = "_count"
 
         def __init__(self, element, parent=None, left=None, right=None):
@@ -91,7 +91,8 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
             p = replacement
         parent = self.parent(p)
         self._delete(p)
-        self._rebalance_delete(parent) # Riduco il numero di elementi nei sottoalberi interessati dopo la cancellazione
+        # Riduco il numero di elementi nei sottoalberi interessati dopo la cancellazione
+        self._rebalance_delete(parent)
         self._fix_count_delete(parent)
 
     # --------------------- public methods for (standard) map interface ---------------------
@@ -120,7 +121,8 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
                     leaf = self._add_right(p, item)
                 else:
                     leaf = self._add_left(p, item)
-        self._rebalance_insert(leaf) # Incremento il numero di elementi nei sottoalberi interessati prima della cancellazione
+        # Incremento il numero di elementi nei sottoalberi interessati prima della cancellazione
+        self._rebalance_insert(leaf)
         self._fix_count_insert(leaf)
 
     def __delitem__(self, k):
@@ -314,50 +316,3 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
         if k < count-1:
             return self.kth_smallest(left, k)
         return self.kth_smallest(self.right(p), k-count)
-
-
-# def generate_random_integer():
-#     return random.randint(-50, 50)
-
-
-# def random_list():
-#     l = [0] * 12
-#     for i in range(len(l)):
-#         l[i] = generate_random_integer()
-#     return l
-
-
-# def create_tree(l):
-#     t = MedianTreeMap()
-#     for el in l:
-#         t[el] = 0
-#     return t
-
-
-# def mess_up_tree(t, l):
-#     for z in range(50):
-#         ch = random.choice([0, 1])
-#         if len(l) == 0 or ch == 0:  # Add random integer
-#             i = generate_random_integer()
-#             while i in l:
-#                 i = generate_random_integer()
-#             l.append(i)
-#             t[i] = 0
-#         else:  # Remove existing random element from both structures
-#             i = random.choice(l)
-#             l.remove(i)
-#             del t[i]
-#     return t, l
-
-
-# r = 0
-# while r < 100:
-#     random.seed(r)
-#     l = random_list()
-#     t = create_tree(l)
-#     l = list(sorted(set(l)))
-#     t, l = mess_up_tree(t, l)
-#     res = t.median()
-#     res = None if res is None else res.key()
-#     print(r)
-#     r += 1
