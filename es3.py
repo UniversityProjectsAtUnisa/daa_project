@@ -2,7 +2,7 @@ import random
 from .daa_collections.tree.linked_binary_tree import LinkedBinaryTree
 from .daa_collections.map.map_base import MapBase
 
-
+# TODO: Cambia i commenti in inglese
 class MedianTreeMap(LinkedBinaryTree, MapBase):
 
     class _Node(LinkedBinaryTree._Node):  # Aggiunto attributo _count al nodo
@@ -225,7 +225,7 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
         self._validate(p)
         walk = self.parent(p)
         while walk:
-            self.increase_count(walk)
+            self._increase_count(walk)
             walk = self.parent(walk)
 
     def _fix_count_delete(self, p):
@@ -234,7 +234,7 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
         self._validate(p)
         walk = p
         while walk:
-            self.decrease_count(walk)
+            self._decrease_count(walk)
             walk = self.parent(walk)
         root = self.root()
         count = 1
@@ -282,15 +282,15 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
             self._rotate(x)
             return x
 
-    def set_count(self, p, c):
+    def _set_count(self, p, c):
         node = self._validate(p)
         node._count = c
 
-    def increase_count(self, p):
+    def _increase_count(self, p):
         node = self._validate(p)
         node._count += 1
 
-    def decrease_count(self, p):
+    def _decrease_count(self, p):
         node = self._validate(p)
         node._count -= 1
 
