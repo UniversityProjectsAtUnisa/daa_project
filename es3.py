@@ -1,18 +1,17 @@
-import random
 from .daa_collections.tree.linked_binary_tree import LinkedBinaryTree
 from .daa_collections.map.map_base import MapBase
 
-# TODO: Cambia i commenti in inglese
+
 class MedianTreeMap(LinkedBinaryTree, MapBase):
 
-    class _Node(LinkedBinaryTree._Node):  # Aggiunto attributo _count al nodo
+    class _Node(LinkedBinaryTree._Node):
+        # Added attribute _count to the node
         __slots__ = "_count"
 
         def __init__(self, element, parent=None, left=None, right=None):
             super().__init__(element, parent, left, right)
             self._count = 1
 
-    # ---------------------------- override Position class ----------------------------
     class Position(LinkedBinaryTree.Position):
         def key(self):
             return self.element()._key
@@ -20,7 +19,6 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
         def value(self):
             return self.element()._value
 
-    # ------------------------------- nonpublic utilities -------------------------------
     def _subtree_search(self, p, k):
         if k == p.key():
             return p
@@ -44,7 +42,6 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
             walk = self.right(walk)
         return walk
 
-    # --------------------- public methods providing "positional" support ---------------------
     def first(self):
         return self._subtree_first_position(self.root()) if len(self) > 0 else None
 
@@ -91,11 +88,10 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
             p = replacement
         parent = self.parent(p)
         self._delete(p)
-        # Riduco il numero di elementi nei sottoalberi interessati dopo la cancellazione
         self._rebalance_delete(parent)
+        # Reducing _count of the nodes which are root of a subtree subject to the deletion
         self._fix_count_delete(parent)
 
-    # --------------------- public methods for (standard) map interface ---------------------
     def __getitem__(self, k):
         if self.is_empty():
             raise KeyError('Key Error: ' + repr(k))
@@ -121,8 +117,8 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
                     leaf = self._add_right(p, item)
                 else:
                     leaf = self._add_left(p, item)
-        # Incremento il numero di elementi nei sottoalberi interessati prima della cancellazione
         self._rebalance_insert(leaf)
+        # Increasing _count of the nodes which are root of a subtree subject to the insertion
         self._fix_count_insert(leaf)
 
     def __delitem__(self, k):
@@ -140,7 +136,6 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
             yield p.key()
             p = self.after(p)
 
-    # --------------------- public methods for sorted map interface ---------------------
     def __reversed__(self):
         p = self.last()
         while p is not None:
@@ -209,7 +204,6 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
                 yield (p.key(), p.value())
                 p = self.after(p)
 
-    # --------------------- hooks used by subclasses to balance a tree ----------------------
     def _rebalance_insert(self, p):
         pass
 
@@ -218,34 +212,6 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
 
     def _rebalance_access(self, p):
         pass
-
-    # ------------------------------------ FIX COUNTS METHODS -------------------------------
-
-    def _fix_count_insert(self, p):
-        self._validate(p)
-        walk = self.parent(p)
-        while walk:
-            self._increase_count(walk)
-            walk = self.parent(walk)
-
-    def _fix_count_delete(self, p):
-        if not p:
-            return  # l'albero potrebbe essere vuoto
-        self._validate(p)
-        walk = p
-        while walk:
-            self._decrease_count(walk)
-            walk = self.parent(walk)
-        root = self.root()
-        count = 1
-        left = self.left(root)
-        if left:
-            count += self.count(left)
-        right = self.right(root)
-        if right:
-            count += self.count(right)
-
-    # --------------------- nonpublic methods to support tree balancing ---------------------
 
     def _relink(self, parent, child, make_left_child):
         if make_left_child:
@@ -282,30 +248,80 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
             self._rotate(x)
             return x
 
-    def _set_count(self, p, c):
-        node = self._validate(p)
-        node._count = c
+    # ------------------------------------ NEW METHODS -------------------------------
+
+    def _fix_count_insert(self, p):
+        """Increases _count of the nodes which are root of a subtree subject to the insertion
+
+        Args:
+            p (Position): Position object that refers to the inserted node
+        """
+        self._validate(p)
+        walk = self.parent(p)
+        while walk:
+            self._increase_count(walk)
+            walk = self.parent(walk)
+
+    def _fix_count_delete(self, p):
+        """Reduces _count of the nodes which are root of a subtree subject to the deletion
+
+        Args:
+            p (Position): Position object that refers to the parent of the deleted node
+        """
+        if not p:
+            # happens when the tree is empty
+            return
+        self._validate(p)
+        walk = p
+        while walk:
+            self._decrease_count(walk)
+            walk = self.parent(walk)
 
     def _increase_count(self, p):
+        """Increases by one the _count of the node refered by the position given as input
+
+        Args:
+            p (Position): Position object that refers to a node of which the _count must be increased 
+        """
         node = self._validate(p)
         node._count += 1
 
     def _decrease_count(self, p):
+        """Decreases by one the _count of the node refered by the position given as input
+
+        Args:
+            p (Position): Position object that refers to a node of which the _count must be decreased 
+        """
         node = self._validate(p)
         node._count -= 1
 
     def count(self, p):
+        """Returns the _count of the node refered by the position given as input
+
+        Args:
+            p (Position): Position object that refers to a node of which the _count must be returned 
+
+        Returns:
+            int: the _count of the node refered by the position object in input
+        """
         node = self._validate(p)
         return node._count
 
-    def median(self):
-        n = len(self)
-        if n == 0:
-            return None
-        m = n // 2
-        return self.kth_smallest(self.root(), m)
-
     def kth_smallest(self, p, k):
+        """Returns the Position object that refers to a node 
+        of which the element has a key that is 
+        the kth smallest element in the key set.
+
+        The key set considered is associated to the subtree 
+        that starts from the node referred by the position object in input
+
+        Args:
+            p (Position): Position object that refers to the node which is root of the subtree
+            k (int): the index of the key in an immaginary ordered list of keys from the key set
+
+        Returns:
+            Position: The position object associated to the kth smallest key in the key set
+        """
         self._validate(p)
         count = 1
         left = self.left(p)
@@ -316,3 +332,17 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
         if k < count-1:
             return self.kth_smallest(left, k)
         return self.kth_smallest(self.right(p), k-count)
+
+    def median(self):
+        """Returns a Position object that refers to a node 
+        of which the element has a key that is
+        the median element of the key set of the tree
+
+        Returns:
+            Position: The position object
+        """
+        n = len(self)
+        if n == 0:
+            return None
+        m = n // 2
+        return self.kth_smallest(self.root(), m)

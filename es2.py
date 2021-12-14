@@ -1,154 +1,111 @@
-import io
-import pstats
-import cProfile
-import random
-from daa_collections.graphs.graph import Graph
+from .daa_collections.graphs.graph import Graph
 import math
-from itertools import combinations
 
 
-class Validator():
-    __slots__ = "_cache", "_k"
+def group_size(n):
+    """Finds a suitable group size for a vertices set of size n
 
-    def __init__(self, _k):
-        self._k = _k
-        self.init_cache()
+    Args:
+        n (int): the size of a vertices set
 
-    def init_cache(self):
-        self._cache = [None] * 2**self._k
-
-    def is_valid_recursive(self, g: Graph, vertices):
-        if len(vertices) <= 1:
-            return True
-        if not isinstance(vertices, tuple):
-            vertices = tuple(vertices)
-        if vertices in self._cache:
-            return self._cache[vertices]
-        if not self.is_valid_recursive(g, vertices[:-1]):
-            return False
-        v = vertices[-1]
-        for o in vertices[:-1]:
-            if g.get_edge(v, o) is not None:
-                self._cache[vertices] = False
-                return False
-        self._cache[vertices] = True
-        return True
-
-    def is_valid(self, g: Graph, indexed_vertices):
-        if len(indexed_vertices) <= 1:
-            return True
-        index = 2**indexed_vertices[0][0]
-        for j, (i, v) in enumerate(indexed_vertices[1:]):
-            index += 2**i
-            if self._cache[index] == True:
-                continue
-            if self._cache[index] == False:
-                return False
-            # elif self._cache[index] is None:
-            for _, o in indexed_vertices[:j+1]:
-                if g.get_edge(v, o) is not None:
-                    self._cache[index] = False
-                    return False
-            self._cache[index] = True
-        return True
-
-    def write(self, lung):
-        with open(f"logs/test.log", "a") as f:
-            f.write(
-                f"{Validator._validator=} {self._calculated=} {self._from_cache=} {lung=}\n")
+    Returns:
+        int: a suitable group size based on n
+    """
+    CONSTANT = 1
+    return math.floor(CONSTANT*math.log2(n))
 
 
-def is_valid(g: Graph, vertices):
-    vertices = list(vertices)
-    for i, v in enumerate(vertices[:-1]):
-        for o in vertices[i+1:]:
-            if g.get_edge(v, o) is not None:
-                return False
-    return True
+def _groups(l: list, k=None):
+    """Generator of lists which are a suitable partitioning 
+    for a list of vertices
 
+    Args:
+        l (list of Vertex): the list of vertices
+        k (int, optional): the group size. Defaults to group_size(len(l)).
 
-def groups(l: list, k):
+    Yields:
+        list of Vertex: the groups of size k. 
+            The last group has at most k vertices.
+    """
+    if k is None:
+        k = group_size(len(l))
     for i in range(0, len(l), k):
         yield l[i:i+k]
 
 
-def bruteforce_independent_set(g: Graph, l=None, validator=None):
-    vertices = list(g.vertices()) if l == None else l
-    if validator is None:
-        validator = Validator(len(vertices))
-    else:
-        validator.init_cache()
-    for i in range(len(vertices), 0, -1):
-        for comb in combinations(enumerate(vertices), i):
-            if validator.is_valid(g, comb):
-        # for comb in combinations(vertices, i):
-        #     if is_valid(g, comb):
-                return comb
-    return tuple()
+def bruteforce_independent_set(g: Graph, vertices=None):
+    """Finds the maximum (with most vertices) independent set of a graph.
+    If a list of vertices is given, finds the maximum independent set 
+    among those vertices in relation to g.
+
+    This algorithm, given enough time and space, 
+    is always able to find the best independent set
+
+    Args:
+        g (Graph): the graph
+        vertices (set of Vertex or list of Vertex, optional): the vertices set to consider. 
+
+            Defaults to g.vertices()
+
+    Returns:
+        set of Vertex: inpdendent set for g
+    """
+    if vertices == None:
+        # Use the entire vertices set
+        vertices = list(g.vertices())
+    elif isinstance(vertices, set):
+        # Prepare for indexed access
+        vertices = list(vertices)
+    elif not isinstance(vertices, list):
+        # Also accepts list for convenience
+        raise TypeError("Vertices must be of type set or list")
+
+    if len(vertices) == 0:
+        return set()
+
+    indices_of_best = []
+    cur = [0]
+    last = cur[-1]
+    while last < len(vertices):
+        is_valid = True
+        for j in cur:
+            if g.get_edge(vertices[last], vertices[j]) is not None:
+                is_valid = False
+                break
+        if is_valid:
+            if len(cur) > len(indices_of_best):
+                indices_of_best = cur[:]
+        if not is_valid:
+            cur.pop()
+
+        last += 1
+        while last == len(vertices) and len(cur):
+            last = cur.pop()+1
+        cur.append(last)
+    return set(vertices[i] for i in indices_of_best)
 
 
-# -----------------------------------------------------
-
-
-def profile(fnc):
-    """A decorator that uses cProfile to profile a function"""
-
-    def inner(*args, **kwargs):
-
-        pr = cProfile.Profile()
-        pr.enable()
-        retval = fnc(*args, **kwargs)
-        pr.disable()
-        s = io.StringIO()
-        sortby = 'cumulative'
-        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-        ps.print_stats()
-        print(s.getvalue())
-        return retval
-
-    return inner
-# -----------------------------------------------------
-
-
-@profile  # Remove
 def independent_set(g: Graph):
-    if len(g.vertices()) <= 1:
-        return g.vertices()
+    """Finds the maximum (with most vertices) independent set of a graph.
 
+    This is an approximation algorithm, 
+    therefore it does not always find the optimal result.
+
+    Args:
+        g (Graph): the graph
+
+    Returns:
+        set of Vertex: inpdendent set for g
+    """
     vertices = list(g.vertices())
-    k = math.floor(math.log2(len(vertices)))
-    validator = Validator(k)
-    best = []
-    for group in groups(vertices, k):
-        cur = bruteforce_independent_set(g, group, validator)
+    if len(vertices) <= 1:
+        return set(vertices)
+
+    k = group_size(len(vertices))
+    best = set()
+    for group in _groups(vertices, k):
+        cur = bruteforce_independent_set(g, group)
         if len(cur) > len(best):
             best = cur
 
-    return set(best)
-
-
-# ------------------------------------------------------------
-random.seed(1)
-
-
-def create_graph(n_vertices, prob=None):
-    if prob is None:
-        prob = random.random()
-    g = Graph()
-    for _ in range(n_vertices):
-        g.insert_vertex()
-
-    vertices = list(g.vertices())
-    for i, v in enumerate(vertices[:-1]):
-        for o in vertices[i+1:]:
-            if random.choices([0, 1], [1-prob, prob])[0]:
-                g.insert_edge(v, o)
-    return g
-
-
-def random_graph():
-    N_VERTICES = 2000
-    return create_graph(N_VERTICES, .5)
-
-
-independent_set(random_graph())
+    return best
