@@ -336,7 +336,9 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
     def median(self):
         """Returns a Position object that refers to a node 
         of which the element has a key that is
-        the median element of the key set of the tree
+        the median element of the key set of the tree.
+        
+        Returns None if the tree is empty
 
         Returns:
             Position: The position object
