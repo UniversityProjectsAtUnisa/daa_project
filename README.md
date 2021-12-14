@@ -1,6 +1,6 @@
 # DAA Project single
 
-## How to run
+## How to test
 
 ```
 python -m virtualenv venv
