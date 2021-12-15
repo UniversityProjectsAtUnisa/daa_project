@@ -323,15 +323,18 @@ class MedianTreeMap(LinkedBinaryTree, MapBase):
             Position: The position object associated to the kth smallest key in the key set
         """
         self._validate(p)
-        count = 1
-        left = self.left(p)
-        if left:
-            count += self.count(left)
-        if k == count-1:
-            return p
-        if k < count-1:
-            return self.kth_smallest(left, k)
-        return self.kth_smallest(self.right(p), k-count)
+        while True:
+            count = 0
+            left = self.left(p)
+            if left:
+                count = self.count(left)
+                if k < count:
+                    p = left
+            if k == count: 
+                return p
+            elif k > count:
+                k -= count + 1
+                p = self.right(p)
 
     def median(self):
         """Returns a Position object that refers to a node 
